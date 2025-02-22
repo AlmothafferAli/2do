@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
+  Pressable,
 } from "react-native";
 import { useState, useMemo, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -21,6 +22,7 @@ export default function Index() {
   const [editingId, setEditingId] = useState<string>("");
   const [isediting, setIsediting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTask, setSelectedTask] = useState<any>(null);
   useEffect(() => {
     restoreTasks();
   }, []);
@@ -103,9 +105,12 @@ export default function Index() {
   };
 
   return (
-    <View className="flex-1 p-4 bg-white">
+    <Pressable
+      className="flex-1 p-4 bg-white"
+      onPress={() => setSelectedTask(null)}
+    >
       <TextInput
-        className=" border border-gray-300 text-lg p-2 mb-4 bg-white rounded-md "
+        className=" border border-gray-300 text-2xl p-4 mb-4 bg-white rounded-xl"
         placeholder="Search..."
         onChangeText={setSearchQuery}
         value={searchQuery}
@@ -114,34 +119,54 @@ export default function Index() {
       />
 
       <FlatList
+        className="rounded-lg"
         data={filteredTasks}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View className="flex-row justify-between items-center  border-gray-300 p-2 mb-2 rounded-md">
-            <Text className="text-black text-lg">{item.text}</Text>
-            <View className="flex-row justify-end items-center">
-              <TouchableOpacity
-                className="bg-yellow-500 px-2 py-1 mr-2"
-                onPress={() => handleEdit(item.id, item.text)}
-              >
-                <Text className="text-white text-sm">Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="bg-red-500 px-2 py-1"
-                onPress={() => handleDelete(item.id)}
-              >
-                <Text className="text-white text-sm">Delete</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className={`bg-green-500 px-2 py-1 ${
-                  item.isCompleted === false ? "opacity-50" : "opacity-100"
-                }`}
-                onPress={() => completeTask(item.id)}
-              >
-                <Text className="text-white text-sm">Complete</Text>
-              </TouchableOpacity>
+          <Pressable
+            className="flex-row justify-between items-center   p-4 mb-2"
+            onLongPress={() => {
+              setSelectedTask(item);
+            }}
+          >
+            <View className="bg-black h-full w-0.5 -m-4"></View>
+            <View className="flex-row justify-between items-center w-full">
+              <Text className="text-black text-lg ">{item.text}</Text>
+              <View className="flex-row justify-end  ">
+                {item.id === selectedTask?.id && (
+                  <View className="flex-row ">
+                    <TouchableOpacity
+                      className="bg-red-500 rounded-full flex items-center justify-center p-4 ml-2"
+                      style={{ boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)" }}
+                      onPress={() => handleDelete(item.id)}
+                    >
+                      <Text className="text-white text-lg">Delete</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className={`bg-yellow-500 rounded-full flex items-center justify-center p-4 ml-2 ${
+                        !isediting ? "opacity-50" : "opacity-100"
+                      } `}
+                      style={{ boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)" }}
+                      onPress={() => handleEdit(item.id, item.text)}
+                    >
+                      <Text className="text-white text-lg">Edit</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                <TouchableOpacity
+                  className={`bg-green-500 rounded-full flex items-center justify-center p-4 ml-2 ${
+                    item.isCompleted === false ? "opacity-50" : "opacity-100"
+                  }`}
+                  style={{ boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)" }}
+                  onPress={() => completeTask(item.id)}
+                >
+                  <Text className="text-white font-bold text-lg ">
+                    Complete
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </Pressable>
         )}
       />
 
@@ -161,6 +186,6 @@ export default function Index() {
           {isediting ? "Update" : "Add"}
         </Text>
       </TouchableOpacity>
-    </View>
+    </Pressable>
   );
 }
